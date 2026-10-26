@@ -1,0 +1,85 @@
+# 抖音数据监控 Agent 配置
+# 说明：demo 模式无需任何外部凭证即可运行出完整效果；
+#       live 模式需要填入飞书凭证与抖音账号 Cookie（见 README）。
+
+mode: demo          # demo | live
+
+monitor:
+  accounts:                          # 题目"测试账号表格"原文账号（5 个全监控，题目要求最少 2 个）
+    - 卡带森林
+    - 卡带森林（发小）
+    - 卡带森林的小马甲
+    - 卡带森林（兄弟）
+    - 佳佳超有才
+  within_days: 3                    # 仅监控近 3 天内发布的视频
+  schedule_times: ["12:00", "18:00", "22:00"]   # 题目规定三时段
+  demo_interval_seconds: 180        # 演示默认间隔：3 分钟
+  demo_time_scale: 18000            # 快速演示：1s 真实时间 ≈ 5h 模拟时间（0.2s 间隔 ≈ 1h/轮）
+  demo_fast: true                   # 演示快速模式（缩短真实间隔跑多轮）
+  demo_fast_iterations: 4
+  demo_fast_interval_seconds: 0.2   # 0.2s × 18000 倍 = 1h 模拟时间/轮，点赞增量 350~800 稳定触发预警
+  demo_max_scans: 0                 # 3 分钟模式最大扫描次数（0=不限；现场建议 3~5）
+
+alert:
+  like_threshold: 300               # 题目规定：增量 > 300 触发抖加加热预警
+  demo_like_threshold: 300          # 快速演示阈值（时间加速后增量可达 300）
+  demo_slow_like_threshold: 20      # 3 分钟真实间隔演示阈值（增量约 17~40，题目备注允许下调）
+  warned_person: 测试者
+
+# 通知：预警走飞书交互式卡片（带「✅ 同意加热 / ❌ 驳回」人工确认按钮）
+notify:
+  use_card: true                    # false 则退回纯文本
+  reply_confirm: false              # 半自动模式：自动生成回复→飞书卡片人工批准→下轮扫描才真实发送
+                                    # （live 生产推荐 true；mock 演示不受影响）
+  card_callback:
+    host: 0.0.0.0
+    port: 7788                      # 与飞书开放平台"消息卡片请求网址"一致
+    encrypt_key: ""                 # 飞书后台 Encrypt Key；配置后启用回调验签（X-Lark-Signature，SHA256），留空跳过
+
+# 强意图 → 自动回复；弱意图 → 仅记录、转人工（避免单字"歌"误伤用户）
+keywords:
+  strong: ["BGM", "求歌名", "什么歌", "什么歌曲", "这首歌叫什么歌", "背景音乐"]
+  weak: ["好听", "歌"]
+
+song:
+  name: 你是我的仰望
+  singer: 爆火音乐
+
+reply_templates:
+  - "歌曲是{singer}的《{song}》~"
+  - "好听的歌是{singer}的{song}"
+  - "完整版可听 {singer}的{song}"
+  - "{singer}的{song}"
+  - "{song}-{singer}"
+  - "是{singer}的《{song}》"
+
+sink:
+  type: local           # local | feishu
+  output_dir: output
+  feishu:
+    app_id: ""
+    app_secret: ""
+    spreadsheet_token: ""
+    webhook_url: ""
+
+# 题目2 Sub-Agent 的 LLM 兜底解析（OpenAI 兼容接口）
+agent2:
+  enabled: true            # 题目2 定时汇总开关（23:00 统计当日抖加+垫付）
+  summary_time: "23:00"    # 题目规定：晚上 23 点总结当日申请
+  messages_file: ""        # 推广群消息文件路径（空=用内置题目物料演示）
+  quotes:                  # 《推广账号表》报价列：题目物料截图中的博主报价（元）
+    初秋: 400
+    艳红: 700
+    唐山第一女泵工: 700
+    戎大姨: 800
+    高高: 1000
+    葵花夫妇: 1000
+    张栋梁: 100
+    "@@陈三": 700
+  llm:
+    base_url: https://api.deepseek.com
+    api_key: ""          # 留空则不启用 LLM 兜底；也可用环境变量 DEEPSEEK_API_KEY
+    model: deepseek-chat
+
+douyin_cookie: ""
+sec_uids: {}

@@ -1,0 +1,32 @@
+# 虚拟环境
+.venv/
+venv/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# 运行时产物（每次跑都会重新生成）
+output/
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# 日志
+*.log
+*.log.*
+
+# 代码汇总快照（由 dabao.py 生成）
+all_code.txt
+
+# 密钥
+.env
+.env.*
+
+# 编辑器 / 系统
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

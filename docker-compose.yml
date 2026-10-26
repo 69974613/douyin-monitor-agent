@@ -1,0 +1,13 @@
+services:
+  douyin-monitor:
+    build: .
+    container_name: douyin-monitor-agent
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro   # 凭证/阈值外置，改配置不用重建镜像
+      - ./output:/app/output                # 表格/看板/SQLite 状态持久化
+    environment:
+      - TZ=Asia/Shanghai                    # 保证 12/18/22 三时段按北京时间触发
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY:-}
+      - DEMO_FAST=false                     # 容器内禁用快速演示，避免跑完退出 + restart 反复重启
+    restart: unless-stopped
+    command: ["python", "main.py"]          # 生产：按三时段调度持续运行

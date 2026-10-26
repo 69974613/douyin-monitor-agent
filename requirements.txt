@@ -1,0 +1,7 @@
+# 抖音监控 Agent 依赖
+# demo 模式：仅标准库即可跑通（tenacity/PyYAML 均已做缺库降级；装 PyYAML 后 config.yaml 才生效）
+requests>=2.31.0
+PyYAML>=6.0           # 读取 config.yaml（不装则走内置默认配置）
+tenacity>=8.2.0       # 网络请求指数退避重试（缺库自动直通，不阻塞 demo）
+apscheduler>=3.10.0   # 生产三时段调度（12/18/22）+ 23:00 题目2 汇总
+# playwright>=1.45.0  # live 模式真实抖音抓取（另需执行: playwright install chromium）
